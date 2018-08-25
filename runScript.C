@@ -91,8 +91,8 @@ void producePlots(){
 
 void runScript(){
     
-    TString FileName1 = "histo.root";
-    TString FileName2 = "histo.root";
+    TString FileName1 = "histo_Old.root";
+    TString FileName2 = "histo_New.root";
     TTree * emptyTree = 0;
     
     gROOT->ProcessLine(".L SignalOverNoisePlot.C+");
