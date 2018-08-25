@@ -16,6 +16,13 @@ options.register ('newIOV',
 				  VarParsing.varType.bool,
 				  "Run with new IOV")
 				  
+options.register ('nevents',
+				  0,
+				  VarParsing.multiplicity.singleton,
+				  VarParsing.varType.int,
+				  "number of events")
+				  
+				  
 options.parseArguments()
 
 
@@ -40,7 +47,7 @@ process.load("TrackingTools/TransientTrack/TransientTrackBuilder_cfi")
 process.load("RecoTracker.MeasurementDet.MeasurementTrackerEventProducer_cfi")
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(options.nevents)
 )
 
 # Input source
@@ -129,7 +136,8 @@ if options.newIOV == True:
 
 process.GlobalTag.dumpStat = cms.untracked.bool(True)
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("histo.root") )
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("histo.root") )
+process.TFileService = cms.Service("TFileService", fileName =  cms.string (options.outputFile) )
 
 
 
