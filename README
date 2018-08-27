@@ -14,9 +14,9 @@ conddb_import -c sqlite_file:myNoise.db -f frontier://FrontierProd/CMS_CONDITION
 
 sqlite3 myNoise.db
 > select * from IOV;
-> UPDATE IOV SET SINCE=1 WHERE SINCE=321493
+> UPDATE IOV SET SINCE=1 WHERE SINCE=321493;
 > select * from IOV;
-> .exit;
+> .exit
 
 
 grid-proxy-init
