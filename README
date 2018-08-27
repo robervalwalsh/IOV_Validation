@@ -12,11 +12,11 @@ scramv1 b -j4
 
 conddb_import -c sqlite_file:myNoise.db -f frontier://FrontierProd/CMS_CONDITIONS -t myTag -i SiStripNoise_GR10_v1_hlt -b 321493
 
-sqlite3
+sqlite3 myNoise.db
 > select * from IOV;
 > UPDATE IOV SET SINCE=1 WHERE SINCE=321493
 > select * from IOV;
-> .q;
+> .exit;
 
 
 grid-proxy-init
