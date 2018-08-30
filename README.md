@@ -1,3 +1,9 @@
+# IOV Validation
+
+This repository is meant for CMS Strip Conditions Validation
+
+## Instructions:
+
 * Setup lxplus area
 
 ```
@@ -15,7 +21,7 @@ scramv1 b -j4
 python TakeSiStripDBSnaphot.py -s 321493
 ```
 
-* 
+* Run the re-reconstruction 
 
 ```
 grid-proxy-init
@@ -23,6 +29,8 @@ grid-proxy-init
 cmsRun stepALCARECO_RAW2DIGI_RECO_ALCA.py inputFiles=root://cms-xrd-global.cern.ch//store/data/Run2018D/ZeroBias/RAW/v1/000/321/475/00000/FC884CAC-2AA4-E811-9216-FA163EBF0D83.root outputFile=histo_Old.root nevents=10
 cmsRun stepALCARECO_RAW2DIGI_RECO_ALCA.py newNoise=True  inputFiles=root://cms-xrd-global.cern.ch//store/data/Run2018D/ZeroBias/RAW/v1/000/321/475/00000/FC884CAC-2AA4-E811-9216-FA163EBF0D83.root outputFile=histo_New.root nevents=10
 ```
+
+* Run the plot comparison
 
 ```
 root -l runScript.C+
