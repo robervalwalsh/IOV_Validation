@@ -1,4 +1,4 @@
-//log to lxplus
+* Setup lxplus area
 
 ```
 cd /tmp/login/
@@ -9,21 +9,19 @@ git clone git@github.com:jandrea/IOV_Validation.git .
 scramv1 b -j4
 ```
 
-```
-conddb_import -c sqlite_file:myNoise.db -f frontier://FrontierProd/CMS_CONDITIONS -t myTag -i SiStripNoise_GR10_v1_hlt -b 321493
+* Retrieve SiStrip Offline DB snapshot at a given run-number
 
-sqlite3 myNoise.db
-> select * from IOV;
-> UPDATE IOV SET SINCE=1 WHERE SINCE=321493;
-> select * from IOV;
-> .exit
 ```
+python TakeSiStripDBSnaphot.py -s 321493
+```
+
+* 
 
 ```
 grid-proxy-init
  
-cmsRun stepALCARECO_RAW2DIGI_RECO_ALCA.py newIOV=False inputFiles=root://cms-xrd-global.cern.ch//store/data/Run2018D/ZeroBias/RAW/v1/000/321/475/00000/FC884CAC-2AA4-E811-9216-FA163EBF0D83.root outputFile=histo_Old.root nevents=10
-cmsRun stepALCARECO_RAW2DIGI_RECO_ALCA.py newIOV=True  inputFiles=root://cms-xrd-global.cern.ch//store/data/Run2018D/ZeroBias/RAW/v1/000/321/475/00000/FC884CAC-2AA4-E811-9216-FA163EBF0D83.root outputFile=histo_New.root nevents=10
+cmsRun stepALCARECO_RAW2DIGI_RECO_ALCA.py inputFiles=root://cms-xrd-global.cern.ch//store/data/Run2018D/ZeroBias/RAW/v1/000/321/475/00000/FC884CAC-2AA4-E811-9216-FA163EBF0D83.root outputFile=histo_Old.root nevents=10
+cmsRun stepALCARECO_RAW2DIGI_RECO_ALCA.py newNoise=True  inputFiles=root://cms-xrd-global.cern.ch//store/data/Run2018D/ZeroBias/RAW/v1/000/321/475/00000/FC884CAC-2AA4-E811-9216-FA163EBF0D83.root outputFile=histo_New.root nevents=10
 ```
 
 ```
