@@ -304,7 +304,7 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
   runNumber = iEvent.id().run();
-  std::cout << "runNumber = " << runNumber << std::endl;
+  edm::LogInfo("TrackCluster") << "runNumber = " << runNumber << std::endl;
   eventNumber = iEvent.id().event();
   lumiBlock = iEvent.luminosityBlock();
  
@@ -322,9 +322,6 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::ESHandle<TransientTrackingRecHitBuilder> theTrackerRecHitBuilder;
   iSetup.get<TransientRecHitRecord>().get(ttrhbuilder_,theTrackerRecHitBuilder);
   
-  
-
-  
   //get tracker geometry
   edm::ESHandle<TrackerGeometry> pDD;
   iSetup.get<TrackerDigiGeometryRecord>().get(pDD);
@@ -334,12 +331,10 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken(trajSrc_, TrajectoryCollection);
   edm::Handle<TrajTrackAssociationCollection> trajTrackAssociationHandle;
   iEvent.getByToken(trajTrackAssociationSrc_, trajTrackAssociationHandle);
-  
-  
+ 
   edm::ESHandle<StripClusterParameterEstimator> parameterestimator;
   iSetup.get<TkStripCPERecord>().get("StripCPEfromTrackAngle", parameterestimator); 
   const StripClusterParameterEstimator &stripcpe(*parameterestimator);
-  
   
   iSetup.get<IdealMagneticFieldRecord>().get(bField); 
 
@@ -347,8 +342,7 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
   const TrackerTopology* const tTopo = tTopoHandle.product();
 
-
-//  std::cout << "I'm doing some junk" << std::endl;
+  //  edm::LogInfo("TrackCluster") << "I'm doing some junk" << std::endl;
  
   // Loop on tracks
   for(TrajTrackAssociationCollection::const_iterator it = trajTrackAssociationHandle->begin(); it!=trajTrackAssociationHandle->end(); ++it) {
@@ -364,11 +358,11 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     tree_track_phi   = itTrack->phi();
     tree_track_nhits = itTrack->hitPattern().numberOfValidHits();
     tree_track_NChi2 = itTrack->normalizedChi2();
-//    std::cout << "Found a track" << std::endl;
+    //    edm::LogInfo("TrackCluster") << "Found a track" << std::endl;
     
     // Loop on trajectory measurements
     for (itm=TMeas.begin();itm!=TMeas.end();itm++){
-//      std::cout << "Found a traj" << std::endl;
+      //      edm::LogInfo("TrackCluster") << "Found a traj" << std::endl;
       const TrackingRecHit* hit = &*(*itm).recHit();
       const DetId detid = hit->geographicalId();
       int subDet = detid.subdetId();
@@ -399,15 +393,14 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         tree_Cluster_LocalTracj_Y[tree_track_nclusters] = tsos.localDirection().y();
         tree_Cluster_LocalTracj_Z[tree_track_nclusters] = tsos.localDirection().z();
 	
-	std::cout << "***************** " << std::endl;
-	std::cout << tsos.localDirection().x() << std::endl;
-	std::cout << tsos.localDirection().y() << std::endl;
-	std::cout << tsos.localDirection().z() << std::endl;
-	std::cout << tree_Cluster_LocalTracj_X[tree_track_nclusters] << std::endl;
-	std::cout << tree_Cluster_LocalTracj_Y[tree_track_nclusters] << std::endl;
-	std::cout << tree_Cluster_LocalTracj_Z[tree_track_nclusters] << std::endl;
-	
-	
+	edm::LogInfo("TrackCluster") << "***************** " << " "
+				     << tsos.localDirection().x() << " "
+				     << tsos.localDirection().y() << " "
+				     << tsos.localDirection().z() << " "
+				     << tree_Cluster_LocalTracj_X[tree_track_nclusters] << " "
+				     << tree_Cluster_LocalTracj_Y[tree_track_nclusters] << " "
+				     << tree_Cluster_LocalTracj_Z[tree_track_nclusters] << " " << std::endl;
+       
 	//determine subdte id
 	if(subDet == SiStripDetId::TIB){
 	  tree_Cluster_subDet[tree_track_nclusters] = 0;
@@ -428,15 +421,8 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  tree_Cluster_LayerNbr[tree_track_nclusters] =tTopo->tecWheel(detid.rawId());
 	  if(tTopo->tecIsFrontPetal(detid.rawId()))  tree_Cluster_PetalSide[tree_track_nclusters] = 1;
 	  else                                       tree_Cluster_PetalSide[tree_track_nclusters] = -1;
-	  /*cout << "------------" << endl;
-	  cout << tree_Cluster_WheelSide[tree_track_nclusters] << endl;
-	  cout << tree_Cluster_LayerNbr[tree_track_nclusters] << endl;
-	  cout << tree_Cluster_PetalSide[tree_track_nclusters] << endl;*/
 	}
-	
-	
-        
-	
+
 	tree_Cluster_tsosx[tree_track_nclusters]        = tsos.localPosition().x();
         tree_Cluster_tsosy[tree_track_nclusters]        = tsos.localPosition().y();
         tree_Cluster_SoverN[tree_track_nclusters]       = clusterInfo.signalOverNoise();
@@ -472,7 +458,6 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	
 	tree_Strips_idFirst[tree_track_nclusters] = tree_Strips_nstrip;
 	
-	
 	for(unsigned int istrip=0; istrip < stripGains.size(); istrip++){
           tree_Strips_stripCharges[tree_Strips_nstrip]      = stripCharges[istrip];
 	  tree_Strips_stripGains[tree_Strips_nstrip]        = stripGains[istrip];
@@ -481,8 +466,7 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  tree_Strips_nstrip++;
 	}
         tree_Strips_idLast[tree_track_nclusters] = tree_Strips_nstrip;
-	
-	
+		
         tree_track_nclusters++;
       }//end if cluster
      
