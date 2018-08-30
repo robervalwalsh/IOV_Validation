@@ -10,19 +10,67 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing ('analysis')
 
-options.register ('newIOV',
-				  0,
-				  VarParsing.multiplicity.singleton,
-				  VarParsing.varType.bool,
-				  "Run with new IOV")
+
+options.register('conditionGT',
+                 "102X_dataRun2_Express_v1",
+                 VarParsing.multiplicity.singleton,
+                 VarParsing.varType.string,
+		 "condition global tag for the job (\"auto:run2_data\" is default)")
+
+options.register ('newNoise',
+		  0,
+		  VarParsing.multiplicity.singleton,
+		  VarParsing.varType.bool,
+		  "Run with new noise IOV")
+
+options.register ('newG1',
+		  0,
+		  VarParsing.multiplicity.singleton,
+		  VarParsing.varType.bool,
+		  "Run with new G1 IOV")
+
+options.register ('newG2',
+		  0,
+		  VarParsing.multiplicity.singleton,
+		  VarParsing.varType.bool,
+		  "Run with new G2 IOV")
+
+options.register ('newBC',
+		  0,
+		  VarParsing.multiplicity.singleton,
+		  VarParsing.varType.bool,
+		  "Run with new BadComponent IOV")
+
+options.register ('newPedestals',
+		  0,
+		  VarParsing.multiplicity.singleton,
+		  VarParsing.varType.bool,
+		  "Run with new Pedestals IOV")
+
+options.register ('takeAll',
+		  0,
+		  VarParsing.multiplicity.singleton,
+		  VarParsing.varType.bool,
+		  "Run with full DB snapshot")
 				  
 options.register ('nevents',
-				  0,
-				  VarParsing.multiplicity.singleton,
-				  VarParsing.varType.int,
-				  "number of events")
-				  
-				  
+		  0,
+		  VarParsing.multiplicity.singleton,
+		  VarParsing.varType.int,
+		  "number of events")
+
+# options.register('outputFile',
+#                  "output.root",
+#                  VarParsing.multiplicity.singleton,
+#                  VarParsing.varType.string,
+#                  "name for the output file")
+
+# options.register('inputFiles',
+# 		 "root://cms-xrd-global.cern.ch//store/data/Run2018D/ZeroBias/RAW/v1/000/321/475/00000/FC884CAC-2AA4-E811-9216-FA163EBF0D83.root",
+#                  VarParsing.multiplicity.list,
+#                  VarParsing.varType.string,
+# 		 "file to process")		
+		  				  
 options.parseArguments()
 
 
@@ -51,15 +99,12 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 # Input source
-process.source = cms.Source("PoolSource",
-#    fileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch//store/data/Run2018D/ZeroBias/RAW/v1/000/321/475/00000/FC884CAC-2AA4-E811-9216-FA163EBF0D83.root'),
-    fileNames = cms.untracked.vstring(options.inputFiles),
-    secondaryFileNames = cms.untracked.vstring()
-)
+process.source = cms.Source("PoolSource",			    
+			    fileNames = cms.untracked.vstring(options.inputFiles),
+			    secondaryFileNames = cms.untracked.vstring()
+			    )
 
-process.options = cms.untracked.PSet(
-
-)
+process.options = cms.untracked.PSet()
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -108,46 +153,72 @@ process.RECOoutput = cms.OutputModule("PoolOutputModule",
 )
 '''
 
-
-
-
-
 # Additional output definition
 process.analysis = cms.EDAnalyzer('TrackerCluster',
-    trackLabel         = cms.InputTag("generalTracks"),
-    tkTraj             = cms.InputTag('TrackRefitter'),
-    labelTrajToTrack   = cms.InputTag('TrackRefitter'),
-    siStripClusters    = cms.InputTag('TrackRefitter'),
-    TTRHBuilder        = cms.string('WithTrackAngle')
-)
+				  trackLabel         = cms.InputTag("generalTracks"),
+				  tkTraj             = cms.InputTag('TrackRefitter'),
+				  labelTrajToTrack   = cms.InputTag('TrackRefitter'),
+				  siStripClusters    = cms.InputTag('TrackRefitter'),
+				  TTRHBuilder        = cms.string('WithAngleAndTemplate') # was WithTrackAngle (why use Generic CPE?)
+				  )
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Express_v1', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, options.conditionGT, '')
 
+SiStripRecords = {"SiStripApvGain2Rcd"   : False, 
+		  "SiStripApvGainRcd"    : False, 
+		  "SiStripBadChannelRcd" : False, 
+		  "SiStripFedCablingRcd" : False, 
+		  "SiStripLatencyRcd"    : False, 
+		  "SiStripNoisesRcd"     : False, 
+		  "SiStripPedestalsRcd"  : False,
+		  "SiStripThresholdRcd"  : False}
 
-if options.newIOV == True:
-	process.GlobalTag.toGet = cms.VPSet(
-      	  cms.PSet(record = cms.string("SiStripNoisesRcd"),
-	      		tag = cms.string("myTag"),
-	      		connect = cms.string('sqlite_file:myNoise.db')
-	     	  )
-	)
+if(options.newNoise):
+	SiStripRecords.update({"SiStripNoisesRcd" : True})
+if(options.newG1):
+	SiStripRecords.update({"SiStripApvGainRcd" : True})
+if(options.newG2):
+	SiStripRecords.update({"SiStripApvGain2Rcd" : True})
+if(options.newBC):
+	SiStripRecords.update({"SiStripBadChannelRcd" : True})
+if(options.newPedestals):
+	SiStripRecords.update({"SiStripPedestalsRcd" : True})
 
+if(options.takeAll):
+	for entry,item in SiStripRecords.iteritems():
+		SiStripRecords.update({entry : True})
+	
+
+AcceptedRecords=[]
+for entry,item in SiStripRecords.iteritems():
+	if item:
+		AcceptedRecords.append(entry)
+
+print AcceptedRecords
+
+records = []
+for rcd in AcceptedRecords:
+	records.append(
+		cms.PSet(
+			record = cms.string(rcd),
+			tag    = cms.string(rcd.replace("Rcd","")),
+			connect = cms.string("sqlite_file:DBSnapshot.db")
+			)
+		)
+
+process.GlobalTag.toGet = cms.VPSet(*records)
 process.GlobalTag.dumpStat = cms.untracked.bool(True)
 
-#process.TFileService = cms.Service("TFileService", fileName = cms.string("histo.root") )
-process.TFileService = cms.Service("TFileService", fileName =  cms.string (options.outputFile) )
-
-
-
+process.TFileService = cms.Service("TFileService", 
+				   fileName =  cms.string (options.outputFile) 
+				   )
 
 # Path and EndPath definitions
 process.raw2digi_step = cms.Path(process.RawToDigi)
 process.reconstruction_step = cms.Path(process.reconstruction_trackingOnly)
 process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.analysis)
-
-
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.analysis_step)
