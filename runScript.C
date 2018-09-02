@@ -5,12 +5,10 @@
 #include "TTree.h"
 #include "TROOT.h"
 #include "TStyle.h"
-#include "SignalOverNoisePlot.h"
+#include "TrackerClusterAnalysis.h"
 #include "TStyle.h"
 #include "TLegend.h"
 #include <vector>
-
-
   
 void producePlots(){
   
@@ -50,6 +48,12 @@ void producePlots(){
   histonames.push_back("SoverN_TIDm");
   histonames.push_back("SoverN_TECp");
   histonames.push_back("SoverN_TECm");
+  histonames.push_back("ClusterCharge_TIB");
+  histonames.push_back("ClusterCharge_TOB");
+  histonames.push_back("ClusterCharge_TIDp");
+  histonames.push_back("ClusterCharge_TIDm");
+  histonames.push_back("ClusterCharge_TECp");
+  histonames.push_back("ClusterCharge_TECm");
   
   TCanvas * c1 = new TCanvas("c", "c", 800, 600);
   for(unsigned int i=0; i<histonames.size(); i++){
@@ -65,7 +69,11 @@ void producePlots(){
     histNew->SetLineColor(2); 
     histNew->SetLineWidth(2); 
     histOld->SetLineWidth(2); 
-    histOld->GetXaxis()->SetTitle("Signal Over Noise");
+    if(histonames[i].Contains("SoverN")){
+      histOld->GetXaxis()->SetTitle("Signal Over Noise");
+    } else {
+      histOld->GetXaxis()->SetTitle("Normalized Cluster Charge");
+    }
     histOld->GetYaxis()->SetTitle("#clusters");
     histOld->GetXaxis()->SetTitleOffset(0.5);
     histOld->GetYaxis()->SetTitleOffset(0.7);
@@ -95,12 +103,12 @@ void runScript(){
     TString FileName2 = "histo_New.root";
     TTree * emptyTree = 0;
     
-    gROOT->ProcessLine(".L SignalOverNoisePlot.C+");
-    //TString command = "SignalOverNoisePlot(emptyTree, \""+FileName1.Data()+"\"output.root\\" )";
-    SignalOverNoisePlot t1(emptyTree, FileName1.Data(), "output1.root");
+    gROOT->ProcessLine(".L TrackerClusterAnalysis.C+");
+    //TString command = "TrackerClusterAnalysis(emptyTree, \""+FileName1.Data()+"\"output.root\\" )";
+    TrackerClusterAnalysis t1(emptyTree, FileName1.Data(), "output1.root");
     t1.Loop();
     
-    SignalOverNoisePlot t2(emptyTree, FileName2.Data(), "output2.root");
+    TrackerClusterAnalysis t2(emptyTree, FileName2.Data(), "output2.root");
     t2.Loop();
     
     producePlots();

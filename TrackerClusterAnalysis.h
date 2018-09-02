@@ -5,8 +5,8 @@
 // found on file: histo.root
 //////////////////////////////////////////////////////////
 
-#ifndef SignalOverNoisePlot_h
-#define SignalOverNoisePlot_h
+#ifndef TrackerClusterAnalysis_h
+#define TrackerClusterAnalysis_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -16,7 +16,7 @@
 
 // Header file for the classes stored in the TTree if any.
 
-class SignalOverNoisePlot {
+class TrackerClusterAnalysis {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -107,8 +107,8 @@ public :
    TBranch        *b_eventNumber;   //!
    TBranch        *b_lumiBlock;   //!
 
-   SignalOverNoisePlot(TTree *tree=0, TString inputName = "", TString outputName = "");
-   virtual ~SignalOverNoisePlot();
+   TrackerClusterAnalysis(TTree *tree=0, TString inputName = "", TString outputName = "");
+   virtual ~TrackerClusterAnalysis();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -122,8 +122,8 @@ public :
 
 #endif
 
-#ifdef SignalOverNoisePlot_cxx
-SignalOverNoisePlot::SignalOverNoisePlot(TTree *tree, TString inputName,TString outputName ) : fChain(0) 
+#ifdef TrackerClusterAnalysis_cxx
+TrackerClusterAnalysis::TrackerClusterAnalysis(TTree *tree, TString inputName,TString outputName ) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -148,19 +148,19 @@ SignalOverNoisePlot::SignalOverNoisePlot(TTree *tree, TString inputName,TString 
    Init(tree);
 }
 
-SignalOverNoisePlot::~SignalOverNoisePlot()
+TrackerClusterAnalysis::~TrackerClusterAnalysis()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t SignalOverNoisePlot::GetEntry(Long64_t entry)
+Int_t TrackerClusterAnalysis::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t SignalOverNoisePlot::LoadTree(Long64_t entry)
+Long64_t TrackerClusterAnalysis::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -173,7 +173,7 @@ Long64_t SignalOverNoisePlot::LoadTree(Long64_t entry)
    return centry;
 }
 
-void SignalOverNoisePlot::Init(TTree *tree)
+void TrackerClusterAnalysis::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -233,7 +233,7 @@ void SignalOverNoisePlot::Init(TTree *tree)
    Notify();
 }
 
-Bool_t SignalOverNoisePlot::Notify()
+Bool_t TrackerClusterAnalysis::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -244,18 +244,18 @@ Bool_t SignalOverNoisePlot::Notify()
    return kTRUE;
 }
 
-void SignalOverNoisePlot::Show(Long64_t entry)
+void TrackerClusterAnalysis::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t SignalOverNoisePlot::Cut(Long64_t entry)
+Int_t TrackerClusterAnalysis::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef SignalOverNoisePlot_cxx
+#endif // #ifdef TrackerClusterAnalysis_cxx
