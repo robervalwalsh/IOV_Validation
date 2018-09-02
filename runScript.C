@@ -48,12 +48,12 @@ void producePlots(){
   histonames.push_back("SoverN_TIDm");
   histonames.push_back("SoverN_TECp");
   histonames.push_back("SoverN_TECm");
-  histonames.push_back("ClusterCharge_TIB");
-  histonames.push_back("ClusterCharge_TOB");
-  histonames.push_back("ClusterCharge_TIDp");
-  histonames.push_back("ClusterCharge_TIDm");
-  histonames.push_back("ClusterCharge_TECp");
-  histonames.push_back("ClusterCharge_TECm");
+  histonames.push_back("CCoverPath_TIB");
+  histonames.push_back("CCoverPath_TOB");
+  histonames.push_back("CCoverPath_TIDp");
+  histonames.push_back("CCoverPath_TIDm");
+  histonames.push_back("CCoverPath_TECp");
+  histonames.push_back("CCoverPath_TECm");
   
   TCanvas * c1 = new TCanvas("c", "c", 800, 600);
   for(unsigned int i=0; i<histonames.size(); i++){
@@ -62,7 +62,7 @@ void producePlots(){
     TH1F* histOld = (TH1F*)histo_old->Get(histonames[i].Data());
     TH1F* histNew = (TH1F*)histo_new->Get(histonames[i].Data());
     
-    TCanvas * c1 = new TCanvas("c", "c", 800, 600);
+    TCanvas * c1 = new TCanvas(Form("c_%s",histonames[i].Data()), "c", 800, 600);
     
     histOld->Draw();
     histNew->Draw("same");
@@ -72,7 +72,7 @@ void producePlots(){
     if(histonames[i].Contains("SoverN")){
       histOld->GetXaxis()->SetTitle("Signal Over Noise");
     } else {
-      histOld->GetXaxis()->SetTitle("Normalized Cluster Charge");
+      histOld->GetXaxis()->SetTitle("Normalized Cluster Charge [ADC/mm]");
     }
     histOld->GetYaxis()->SetTitle("#clusters");
     histOld->GetXaxis()->SetTitleOffset(0.5);
