@@ -30,6 +30,7 @@
 #include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit1D.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiStripRecHit2D.h"
 #include "DataFormats/TrackingRecHit/interface/InvalidTrackingRecHit.h"
+#include "DataFormats/SiStripDetId/interface/SiStripDetId.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -39,7 +40,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h" 
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
+#include "Geometry/CommonTopologies/interface/PixelGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
@@ -83,12 +84,14 @@ private:
   
   // ----------member data ---------------------------
   
-  
   edm::InputTag tkTraj_;
 
   const edm::EDGetTokenT<edm::View<reco::Track> > trackSrc_;
   const edm::EDGetTokenT<std::vector<Trajectory> > trajSrc_;
   const edm::EDGetTokenT<TrajTrackAssociationCollection> trajTrackAssociationSrc_;
+  
+  SiStripClusterInfo siStripClusterInfo_;
+
   TTree *smalltree;
   
   edm::Service<TFileService> fs;
@@ -169,7 +172,8 @@ private:
 TrackerCluster::TrackerCluster(const edm::ParameterSet& iConfig):
   trackSrc_( consumes<edm::View<reco::Track> >( iConfig.getParameter<edm::InputTag>("trackLabel") )),
   trajSrc_( consumes<std::vector<Trajectory> >( iConfig.getParameter<edm::InputTag>("tkTraj") )),
-  trajTrackAssociationSrc_( consumes<TrajTrackAssociationCollection>( iConfig.getParameter<edm::InputTag>("labelTrajToTrack") ))
+  trajTrackAssociationSrc_( consumes<TrajTrackAssociationCollection>( iConfig.getParameter<edm::InputTag>("labelTrajToTrack") )),
+  siStripClusterInfo_(consumesCollector(), std::string(""))
 {
   //now do what ever initialization is needed
   usesResource("TFileService");
@@ -314,6 +318,8 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
   const TrackerTopology* const tTopo = tTopoHandle.product();
 
+  siStripClusterInfo_.initEvent(iSetup);
+  
   //  edm::LogInfo("TrackCluster") << "I'm doing some junk" << std::endl;
  
   // Loop on tracks
@@ -351,7 +357,8 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         cluster = &*(SiStriphit1D->cluster());
       }
       
-      SiStripClusterInfo clusterInfo = SiStripClusterInfo( *cluster, iSetup, detid); 
+//      SiStripClusterInfo clusterInfo = SiStripClusterInfo( *cluster, iSetup, detid); 
+      siStripClusterInfo_.setCluster(*cluster, detid);
       //if(cluster == 0) cout << "no cluster found " << endl;
       if(cluster!=0){
         
@@ -399,9 +406,9 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	tree_Cluster_tsosx[tree_track_nclusters]        = tsos.localPosition().x();
         tree_Cluster_tsosy[tree_track_nclusters]        = tsos.localPosition().y();
-        tree_Cluster_SoverN[tree_track_nclusters]       = clusterInfo.signalOverNoise();
-	tree_Cluster_noise[tree_track_nclusters]        = clusterInfo.noiseRescaledByGain();
-	tree_Cluster_charge[tree_track_nclusters]       = clusterInfo.charge();
+        tree_Cluster_SoverN[tree_track_nclusters]       = siStripClusterInfo_.signalOverNoise();
+	tree_Cluster_noise[tree_track_nclusters]        = siStripClusterInfo_.noiseRescaledByGain();
+	tree_Cluster_charge[tree_track_nclusters]       = siStripClusterInfo_.charge();
 	tree_Cluster_width[tree_track_nclusters]        = cluster->amplitudes().size();
 	tree_Cluster_barycenter[tree_track_nclusters]   = cluster->barycenter();
 	
@@ -425,10 +432,10 @@ TrackerCluster::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   
         
 	// strips infos ----
-	std::vector<unsigned char> stripCharges = clusterInfo.stripCharges();
-	std::vector<float>         stripGains = clusterInfo.stripGains();
-	std::vector<float>         stripNoises = clusterInfo.stripNoises();
-	std::vector<bool>          stripQualitiesBad = clusterInfo.stripQualitiesBad();
+	auto                       stripCharges = siStripClusterInfo_.stripCharges();
+	std::vector<float>         stripGains = siStripClusterInfo_.stripGains();
+	std::vector<float>         stripNoises = siStripClusterInfo_.stripNoises();
+	std::vector<bool>          stripQualitiesBad = siStripClusterInfo_.stripQualitiesBad();
 	
 	tree_Strips_idFirst[tree_track_nclusters] = tree_Strips_nstrip;
 	
